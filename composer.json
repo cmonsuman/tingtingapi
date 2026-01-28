@@ -1,0 +1,31 @@
+{
+    "name": "tingting/laravel",
+    "description": "A Laravel package for TingTing API integration.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rajeeb Shakya"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "guzzlehttp/guzzle": "^7.0",
+        "illuminate/support": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "TingTing\\Laravel\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TingTing\\Laravel\\TingTingServiceProvider"
+            ],
+            "aliases": {
+                "TingTing": "TingTing\\Laravel\\Facades\\TingTing"
+            }
+        }
+    }
+}
