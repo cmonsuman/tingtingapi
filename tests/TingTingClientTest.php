@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use TingTing\Laravel\Exceptions\TingTingApiException;
 
 class TingTingClientTest extends TestCase
 {
@@ -75,5 +76,56 @@ class TingTingClientTest extends TestCase
 
         $lastRequest = $mock->getLastRequest();
         $this->assertEquals('Bearer test-token', $lastRequest->getHeaderLine('Authorization'));
+    }
+
+    public function test_request_throws_exception_on_error()
+    {
+        $mock = new MockHandler([
+            new Response(401, [], json_encode(['message' => 'Unauthorized access'])),
+        ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        $guzzleClient = new Client(['handler' => $handlerStack]);
+
+        $config = ['base_url' => 'https://app.tingting.io/api/v1/'];
+        $client = new TingTingClient($config);
+
+        $reflection = new \ReflectionClass($client);
+        $property = $reflection->getProperty('client');
+        $property->setAccessible(true);
+        $property->setValue($client, $guzzleClient);
+
+        try {
+            $client->userDetail();
+            $this->fail('Expected TingTingApiException was not thrown');
+        } catch (TingTingApiException $e) {
+            $this->assertEquals('Unauthorized access', $e->getMessage());
+            $this->assertEquals(401, $e->getCode());
+            $this->assertEquals(['message' => 'Unauthorized access'], $e->getData());
+        }
+    }
+
+    public function test_list_campaigns_with_filters()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['results' => []])),
+        ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        $guzzleClient = new Client(['handler' => $handlerStack]);
+
+        $config = ['base_url' => 'https://app.tingting.io/api/v1/'];
+        $client = new TingTingClient($config);
+
+        $reflection = new \ReflectionClass($client);
+        $property = $reflection->getProperty('client');
+        $property->setAccessible(true);
+        $property->setValue($client, $guzzleClient);
+
+        $filters = ['limit' => 10, 'status' => 'Completed'];
+        $client->listCampaigns($filters);
+
+        $lastRequest = $mock->getLastRequest();
+        $this->assertEquals('limit=10&status=Completed', $lastRequest->getUri()->getQuery());
     }
 }

@@ -4,6 +4,8 @@ namespace TingTing\Laravel;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
+use TingTing\Laravel\Exceptions\TingTingApiException;
 
 class TingTingClient
 {
@@ -69,11 +71,18 @@ class TingTingClient
             $response = $this->client->request($method, $uri, $options);
             return json_decode($response->getBody()->getContents(), true) ?? [];
         } catch (GuzzleException $e) {
-            return [
-                'error' => true,
-                'message' => $e->getMessage(),
-                'status' => $e->getCode(),
-            ];
+            $message = $e->getMessage();
+            $data = null;
+
+            if ($e instanceof RequestException && $e->hasResponse()) {
+                $responseBody = $e->getResponse()->getBody()->getContents();
+                $data = json_decode($responseBody, true);
+                if (isset($data['message'])) {
+                    $message = $data['message'];
+                }
+            }
+
+            throw new TingTingApiException($message, $e->getCode(), $data, $e);
         }
     }
 
@@ -130,7 +139,7 @@ class TingTingClient
      */
     public function userDetail(): array
     {
-        return $this->request('GET', 'auths/user-detail/');
+        return $this->request('GET', 'auths/user-profile/');
     }
 
     // --- Phone Numbers Endpoints ---
@@ -155,10 +164,14 @@ class TingTingClient
 
     /**
      * List campaigns.
+     * 
+     * @param array $filters Optional filters: limit, offset, status, etc.
      */
-    public function listCampaigns(): array
+    public function listCampaigns(array $filters = []): array
     {
-        return $this->request('GET', 'campaign/');
+        return $this->request('GET', 'campaign/', [
+            'query' => $filters,
+        ]);
     }
 
     /**
@@ -209,10 +222,10 @@ class TingTingClient
     }
 
     /**
-     * Add an individual contact to a campaign.
+     * Add an contact|contacts (array ) to a campaign.
      * URL: campaign/{campaignId}/add-contact/
      */
-    public function addIndividualContact(int $campaignId, array $data): array
+    public function addContact(int $campaignId, array $data): array
     {
         return $this->request('POST', "campaign/{$campaignId}/add-contact/", [
             'json' => $data,

@@ -8,6 +8,7 @@ A robust Laravel package for integrating with the [TingTing AI-powered telephony
 - **Phone Numbers**: List active broker and account-assigned phone numbers.
 - **Campaign Management**: Full CRUD for campaigns, run campaigns, and add specific voice assistance.
 - **Contact Management**: Add individual or bulk contacts, manage custom attributes, and update information.
+- **Error Handling**: Custom exception handling for API errors.
 - **OTP Services**: Send OTPs via voice/text and retrieve logs of sent OTPs.
 
 ## Installation
@@ -67,15 +68,15 @@ The package provides a `TingTing` facade with the following capabilities:
 - `activeUserPhones()`
 
 ### Campaigns
-- `listCampaigns()`
+- `listCampaigns(array $filters = [])`
 - `createCampaign(array $data)`
-- `updateCampaign(int $id, array $data)`
-- `deleteCampaign(int $id)`
-- `runCampaign(int $id)`
-- `addVoiceAssistance(int $id, array $data)`
+- `updateCampaign(int $campaignId, array $data)`
+- `deleteCampaign(int $campaignId)`
+- `runCampaign(int $campaignId)`
+- `addVoiceAssistance(int $campaignId, array $data)`
 
 ### Contact Management
-- `addIndividualContact(int $campaignId, array $data)`
+- `addContact(int $campaignId, array $data)`
 - `addBulkContacts(int $campaignId, mixed $bulkData)`
 - `listContacts(int $campaignId)`
 - `deleteContact(int $contactId)`
@@ -86,6 +87,22 @@ The package provides a `TingTing` facade with the following capabilities:
 ### OTP Services
 - `sendOtp(array $data)`
 - `listSentOtps()`
+
+## Error Handling
+
+The package throws `TingTing\Laravel\Exceptions\TingTingApiException` when an API request fails. You can catch this exception to handle errors gracefully:
+
+```php
+use TingTing\Laravel\Exceptions\TingTingApiException;
+use TingTing\Laravel\Facades\TingTing;
+
+try {
+    $response = TingTing::userDetail();
+} catch (TingTingApiException $e) {
+    echo "Error: " . $e->getMessage();
+    $data = $e->getData(); // Get raw error data from the API
+}
+```
 
 ## Basic Usage
 
