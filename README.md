@@ -137,7 +137,7 @@ $campaigns = TingTing::listCampaigns([
         ]);
 ```
 
-## API reference docuemnt from
+## API reference document from TingTing
 https://tingting-api.readthedocs.io/en/latest/
 
 ## License
