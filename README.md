@@ -12,8 +12,16 @@ A robust Laravel package for integrating with the [TingTing AI-powered telephony
 - **OTP Services**: Send OTPs via voice/text and retrieve logs of sent OTPs.
 
 ## Installation
+Add from composer
 
-Add the repository to your `composer.json`:
+```bash
+composer require tingting/laravel
+```
+
+OR
+
+
+Add manually the repository to your `composer.json`:
 
 ```json
 "repositories": [
